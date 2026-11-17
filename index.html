@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="تجربة تفاعلية لمشروع سكاي كور في هاكاثون سيف: احمِ طائرة بدون طيار من هجمات سيبرانية.">
+<meta name="theme-color" content="#06211D">
+<meta property="og:title" content="مهمة سكاي كور">
+<meta property="og:description" content="تجربة تفاعلية لمشروع سكاي كور في هاكاثون سيف: احمِ طائرة بدون طيار من هجمات سيبرانية.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://reefmansour66.github.io/skycore-simulation/">
+<meta property="og:image" content="https://reefmansour66.github.io/skycore-simulation/preview.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2306211D'/%3E%3Cpath d='M32 10l18 6v14c0 12-8 20-18 24-10-4-18-12-18-24V16z' fill='none' stroke='%233BD47F' stroke-width='4' stroke-linejoin='round'/%3E%3Cpath d='M24 32l6 6 11-12' fill='none' stroke='%233BD47F' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<title>مهمة سكاي كور</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Changa:wght@500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
+<style>
+/* RTL defense game, Saudi green. Officer taps each danger; SKYCORE explains how it stopped it.
+   Final ambush plays inside the same radar. Dim background, one dark theme.
+   No letter-spacing on Arabic text: it breaks the joined letters. */
+:root{
+  --bg:#06211D; --bg2:#0A2E27; --panel:#0C3A31; --line:#1A4A41;
+  --ink:#ECF6EF; --muted:#9BBCB1; --faint:#5E8372;
+  --accent:#16A64E; --accent2:#3BD47F; --flag:#006C35; --gold:#E0B85C;
+  --block:#E5565B; --amber:#E0A33A;
+  --disp:"Changa","IBM Plex Sans Arabic",Tahoma,sans-serif;
+  --body:"IBM Plex Sans Arabic",Tahoma,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{direction:rtl;background:var(--bg);color:var(--ink);font-family:var(--body);overflow:hidden;-webkit-font-smoothing:antialiased;line-height:1.7}
+.game{position:fixed;inset:0;overflow:hidden}
+.bgfx{position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(900px 560px at 80% -12%,rgba(16,70,58,.45),transparent 60%),radial-gradient(760px 520px at 6% 112%,rgba(12,59,48,.4),transparent 55%)}
+.gridfx{position:absolute;inset:0;opacity:.04;background-image:linear-gradient(var(--accent) 1px,transparent 1px),linear-gradient(90deg,var(--accent) 1px,transparent 1px);background-size:60px 60px}
+
+.scene{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;overflow-y:auto;z-index:1;
+  padding-block:max(70px,calc(env(safe-area-inset-top,0px) + 62px)) max(22px,env(safe-area-inset-bottom,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.scene.on{display:flex;animation:fadein .5s both}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+.wrap{width:min(720px,100%)}
+
+h1{font-family:var(--disp);font-weight:800;margin:0;line-height:1.2;text-wrap:balance}
+.brandbig{font-family:var(--disp);font-weight:800;letter-spacing:5px;font-size:clamp(2.5rem,9vw,5rem);direction:ltr;
+  background:linear-gradient(115deg,var(--ink) 25%,var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.kick{font-weight:600;font-size:.95rem;color:var(--accent2);margin-bottom:10px}
+.kick.red{color:var(--block)}
+.lead{color:var(--muted);font-size:clamp(1rem,2.2vw,1.2rem);max-width:46ch;margin:12px auto 0}
+.big{font-family:var(--disp);font-weight:800;font-size:clamp(1.7rem,4.6vw,2.8rem);line-height:1.2;text-wrap:balance;margin-top:4px}
+
+.btn{font-family:var(--disp);font-weight:800;font-size:1.1rem;border:0;border-radius:14px;padding:14px 40px;cursor:pointer;
+  background:linear-gradient(180deg,var(--accent2),var(--accent));color:#042016;box-shadow:0 10px 26px rgba(22,166,78,.3);margin-top:24px;transition:transform .15s}
+.btn:hover{transform:translateY(-2px)}
+.btn.lg{font-size:1.25rem;padding:16px 46px}
+.btn.red{background:linear-gradient(180deg,#ff7a7f,var(--block));color:#2a0608;box-shadow:0 10px 26px rgba(229,86,91,.35)}
+.btn.sm{font-size:1rem;padding:11px 34px;margin-top:12px}
+.ghost{background:transparent;border:1px solid var(--line);color:var(--muted);font-family:var(--body);font-weight:600;font-size:.92rem;border-radius:10px;padding:9px 18px;cursor:pointer;margin-top:14px}
+.ghost:hover{border-color:var(--accent)}
+
+.tog{position:absolute;top:max(12px,env(safe-area-inset-top,0px));inset-inline-start:max(12px,env(safe-area-inset-right,0px));z-index:30;display:flex;gap:8px}
+.tog button{width:42px;height:42px;border-radius:50%;background:rgba(10,46,39,.9);border:1px solid var(--line);color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.tog svg{width:20px;height:20px}
+
+.avatar{width:150px;height:150px;margin:0 auto 4px;display:block}
+.card{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:16px 20px;margin-top:16px;text-align:start}
+.row{margin:6px 0;color:var(--muted);font-size:1rem;line-height:1.6}
+.row b{color:var(--ink);font-weight:700}
+.row .v{color:var(--accent2);font-weight:600}
+.namein{width:100%;margin-top:12px;background:#06241f;border:1px solid var(--line);border-radius:11px;padding:12px 16px;color:var(--ink);font-family:var(--body);font-size:1.05rem;text-align:center}
+.namein:focus{outline:2px solid var(--accent)}
+
+.flag .cloth{display:inline-block;transform-origin:left center;animation:wave 2.8s ease-in-out infinite;filter:drop-shadow(0 4px 8px rgba(0,0,0,.35))}
+@keyframes wave{0%,100%{transform:perspective(240px) rotateY(0) skewX(0)}25%{transform:perspective(240px) rotateY(-13deg) skewX(-3deg)}50%{transform:perspective(240px) rotateY(0)}75%{transform:perspective(240px) rotateY(13deg) skewX(3deg)}}
+
+/* ---- game ---- */
+#s-game{justify-content:flex-start}
+.hud{display:flex;align-items:center;gap:12px}
+.hud .nm{font-family:var(--disp);font-weight:700;font-size:.95rem;white-space:nowrap}
+.hud .meter{flex:1;min-width:0}
+.hud .lbl{color:var(--faint);font-size:.78rem;line-height:1.3}
+.bar{height:12px;border-radius:999px;background:#06241f;border:1px solid var(--line);overflow:hidden}
+.bar i{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .6s,background .3s}
+.hud .cnt{font-family:var(--disp);font-weight:800;color:var(--accent2);font-size:1rem;white-space:nowrap}
+
+.arena{position:relative;width:min(360px,78vw);aspect-ratio:1;margin:10px auto 0}
+.arena .rad{position:absolute;border-radius:50%;border:1px solid var(--line);inset:0;opacity:.35}
+.arena .rad.r2{inset:22%}
+.fence{position:absolute;inset:0;width:100%;height:100%;overflow:visible;z-index:1;pointer-events:none}
+.fence circle,.fence path,.fence g{transition:opacity .7s}
+#fenceFull.hl{animation:zhl 1.3s ease-in-out infinite}
+@keyframes zhl{50%{stroke-opacity:1;stroke-width:1.6}}
+.zlabel.hl{color:var(--accent2);font-weight:700}
+.zlabel{position:absolute;top:-2px;inset-inline-start:50%;transform:translateX(50%);color:var(--faint);font-size:.74rem;background:var(--bg);padding:0 8px;line-height:1.4;transition:opacity .4s;z-index:2}
+.dronebox{position:absolute;top:50%;inset-inline-start:50%;width:26%;aspect-ratio:1;transform:translate(50%,-50%);transition:top 2.2s ease-in-out;z-index:4}
+.quad{width:100%;height:100%;display:block;color:var(--ink);animation:bob 3.4s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(-3px)}50%{transform:translateY(4px)}}
+.rotor{transform-origin:center;transform-box:fill-box;animation:spin .16s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.dshield{position:absolute;left:-35%;top:-35%;width:170%;height:170%;opacity:0;color:var(--accent2);pointer-events:none}
+.dshield.on{animation:catch .8s ease-out}
+@keyframes catch{0%{opacity:0;transform:scale(1.5)}40%{opacity:1;transform:scale(.95)}100%{opacity:0;transform:scale(1.08)}}
+
+.threat{position:absolute;top:50%;inset-inline-start:50%;z-index:5;cursor:pointer;transform:translate(50%,-50%);display:flex;flex-direction:column;align-items:center;gap:4px;transition:transform 9s linear;will-change:transform;-webkit-tap-highlight-color:transparent}
+.threat .ic{position:relative;width:52px;height:52px;border-radius:50%;background:radial-gradient(circle,#3a1416,#140708);border:2px solid var(--block);display:flex;align-items:center;justify-content:center;color:#ff9a9d;animation:thb 1s ease-in-out infinite}
+.threat .ic svg{width:26px;height:26px}
+.threat .tl{font-weight:700;font-size:.78rem;color:#ffbfc1;background:rgba(20,7,8,.88);padding:1px 10px;border-radius:999px;white-space:nowrap}
+@keyframes thb{0%,100%{box-shadow:0 0 10px rgba(229,86,91,.4)}50%{box-shadow:0 0 22px rgba(229,86,91,.75)}}
+.tapring{position:absolute;inset:-9px;border-radius:50%;border:2px dashed var(--accent2);animation:tapr 1.3s ease-in-out infinite}
+@keyframes tapr{0%,100%{transform:scale(1);opacity:.45}50%{transform:scale(1.12);opacity:.9}}
+.threat.done{pointer-events:none}
+
+/* ambush stage */
+.safept{position:absolute;top:22%;inset-inline-start:50%;width:38%;aspect-ratio:1;transform:translate(50%,-50%) scale(.6);opacity:0;transition:opacity .5s,transform .5s;z-index:2}
+.safept.on{opacity:1;transform:translate(50%,-50%) scale(1)}
+.safept .ring{position:absolute;inset:0;border-radius:50%;border:2px dashed var(--accent2);background:rgba(22,166,78,.12)}
+.safept .sl{position:absolute;bottom:-26px;inset-inline:0;text-align:center;color:var(--accent2);font-weight:700;font-size:.8rem;white-space:nowrap}
+.trap{position:absolute;top:50%;inset-inline-start:50%;height:32%;width:0;border-inline-start:2px dashed var(--block);opacity:0;transition:opacity .5s;z-index:1}
+.trap.on{opacity:.75}
+.vmark{position:absolute;top:84%;inset-inline-start:50%;transform:translate(50%,-50%);opacity:0;pointer-events:none;z-index:5;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;transition:opacity .5s;-webkit-tap-highlight-color:transparent}
+.vmark.on{opacity:1;pointer-events:auto}
+.vmark .vi{position:relative;width:56px;height:56px;border-radius:50%;box-shadow:0 0 18px rgba(229,86,91,.55);animation:thb 1s ease-in-out infinite}
+.vmark .vi svg{width:100%;height:100%;display:block}
+.vmark .tl{font-weight:700;font-size:.78rem;color:#ffbfc1;background:rgba(20,7,8,.88);padding:1px 10px;border-radius:999px}
+.vmark.down{opacity:.35;pointer-events:none}
+.vmark.down .vi{animation:none;box-shadow:none}
+
+.prompt{color:var(--accent2);font-family:var(--disp);font-weight:700;font-size:1rem;margin-top:8px;min-height:1.6em}
+.actp{margin-top:6px;border-radius:16px;padding:14px 16px;border:1px solid var(--line);background:var(--bg2);text-align:start;display:flex;gap:12px;align-items:flex-start}
+.actp.enemy{border-color:rgba(229,86,91,.55)}
+.actp.sky{border-color:rgba(22,166,78,.6)}
+.actp .ai{width:46px;height:46px;flex:none;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.actp.sky .ai{background:rgba(22,166,78,.16);color:var(--accent2);border-radius:12px}
+.actp .ai svg{width:100%;height:100%;display:block}
+.actp.sky .ai svg{width:28px;height:28px}
+.actp .txt{flex:1;min-width:0}
+.actp .at{font-family:var(--disp);font-weight:700;font-size:1.05rem;line-height:1.4}
+.actp.enemy .at{color:#ff9a9d}.actp.sky .at{color:var(--accent2)}
+.actp .ax{color:var(--muted);font-size:1rem;line-height:1.6;margin-top:2px}
+.tag{display:inline-block;font-family:var(--body);font-size:.74rem;font-weight:600;color:#042016;background:var(--accent2);border-radius:999px;padding:0 9px;margin-inline-start:8px;vertical-align:middle;line-height:1.7}
+.acts{min-height:64px}
+
+/* win */
+.vs{display:flex;align-items:center;justify-content:center;gap:18px;margin:12px auto 0}
+.vs .fig{width:90px;height:90px;position:relative}
+.vs .fig svg{width:100%;height:100%;display:block}
+.vs .mid{font-family:var(--disp);font-weight:800;color:var(--accent2);font-size:1.05rem}
+.defeated::after{content:"";position:absolute;inset:12%;border-radius:50%;
+  background:linear-gradient(45deg,transparent 45%,var(--block) 45% 55%,transparent 55%),linear-gradient(-45deg,transparent 45%,var(--block) 45% 55%,transparent 55%)}
+.defeated svg{opacity:.55}
+.stats{display:flex;gap:8px;justify-content:center;margin-top:16px}
+.stat{flex:1;max-width:160px;min-width:0;background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:12px 8px}
+.stat .v{font-family:var(--disp);font-weight:800;font-size:1.45rem;color:var(--accent2)}
+.stat .l{color:var(--muted);font-size:.84rem}
+.explain{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin-top:16px;text-align:start;color:var(--muted);font-size:1rem;line-height:1.75}
+.explain b{color:var(--ink)}
+
+/* finale */
+.particles{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.pt{position:absolute;bottom:-10px;width:6px;height:6px;border-radius:50%;background:var(--accent2);opacity:.5;animation:rise 8s linear infinite}
+@keyframes rise{to{transform:translateY(-105vh);opacity:0}}
+.poem{font-family:var(--disp);font-weight:700;font-size:clamp(1.35rem,3.8vw,2.1rem);line-height:2;text-wrap:balance}
+.poem .g{color:var(--accent2)}
+.team{margin-top:24px;border-top:1px solid var(--line);padding-top:16px}
+.team .tt{color:var(--faint);font-weight:600;font-size:.88rem;margin-bottom:10px}
+.members{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.mem{display:inline-flex;align-items:center;gap:7px;background:var(--bg2);border:1px solid var(--line);border-radius:999px;padding:8px 14px;color:var(--ink);font-weight:600;font-size:.95rem;text-decoration:none}
+a.mem:hover{border-color:var(--accent);color:var(--accent2)}
+.mem .li{width:17px;height:17px;flex:none;color:var(--accent2)}
+
+@media(prefers-reduced-motion:reduce){*{animation-duration:.001s!important}}
+body.calm .rotor,body.calm .threat .ic,body.calm .pt,body.calm .flag .cloth,body.calm .quad,body.calm .tapring,body.calm .vmark .vi{animation:none!important}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<div class="game" id="game">
+  <div class="bgfx"><div class="gridfx"></div></div>
+  <div class="tog">
+    <button id="muteBtn" aria-label="الصوت"><svg id="muteIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 9v6h4l5 4V5L8 9H4Z"/><path d="M16 9a4 4 0 0 1 0 6"/></svg></button>
+    <button id="calmBtn" aria-label="الحركة"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v18M3 12h18"/></svg></button>
+  </div>
+
+  <!-- START -->
+  <section class="scene on" id="s-start"><div class="wrap">
+    <div class="kick" data-t="startKick"></div>
+    <div class="brandbig">SKYCORE</div>
+    <h1 class="big" data-t="startTitle"></h1>
+    <p class="lead" data-t="startLead"></p>
+    <button class="btn lg" id="startBtn" data-t="startBtn"></button>
+    <div><button class="ghost" id="skipBtn" data-t="skipBtn"></button></div>
+  </div></section>
+
+  <!-- CHARACTER -->
+  <section class="scene" id="s-char"><div class="wrap">
+    <div class="kick" data-t="charKick"></div>
+    <svg class="avatar" id="heroBig" viewBox="0 0 160 160" aria-hidden="true"></svg>
+    <div class="card">
+      <div class="row"><b data-t="rankL"></b> <span class="v" data-t="rankV"></span></div>
+      <div class="row"><b data-t="unitL"></b> <span class="v" data-t="unitV"></span></div>
+      <div class="row"><b data-t="missionL"></b> <span data-t="missionV"></span></div>
+      <div class="row"><b data-t="roleL"></b> <span data-t="roleV"></span></div>
+      <input class="namein" id="nameIn" maxlength="22" aria-label="اسمك">
+    </div>
+    <button class="btn" id="charBtn" data-t="charBtn"></button>
+  </div></section>
+
+  <!-- BRIEFING -->
+  <section class="scene" id="s-brief"><div class="wrap">
+    <svg class="avatar" id="villainBig" viewBox="0 0 160 160" aria-hidden="true" style="width:120px;height:120px"></svg>
+    <div class="kick red" data-t="briefKick"></div>
+    <h1 class="big" data-t="briefTitle"></h1>
+    <p class="lead" data-t="briefLead"></p>
+    <button class="btn lg red" id="briefBtn" data-t="briefBtn"></button>
+  </div></section>
+
+  <!-- GAME -->
+  <section class="scene" id="s-game"><div class="wrap">
+    <div class="hud">
+      <span class="nm" id="hudName"></span>
+      <div class="meter"><div class="lbl" data-t="barLbl"></div><div class="bar"><i id="shieldBar"></i></div></div>
+      <span class="cnt" id="hudCnt"></span>
+    </div>
+    <div class="arena" id="arena">
+      <span class="zlabel" id="zlabel" data-t="zoneTag"></span>
+      <div class="rad"></div><div class="rad r2"></div>
+      <svg class="fence" viewBox="0 0 100 100" aria-hidden="true"><circle id="fenceFull" cx="50" cy="50" r="47" fill="none" stroke="var(--accent2)" stroke-opacity=".7" stroke-width=".7" stroke-dasharray="2 2"/><g id="fenceClosed" style="opacity:0"><path d="M76.96 88.5A47 47 0 0 1 23.04 88.5L36.23 69.66A24 24 0 0 0 63.77 69.66Z" fill="rgba(229,86,91,.22)" stroke="var(--block)" stroke-width=".6"/><text x="66.5" y="88.6" text-anchor="middle" font-size="4.4" font-weight="700" fill="#ff9a9d">مغلق</text></g><path id="fenceCut" style="opacity:0" d="M23.04 88.5A47 47 0 1 1 76.96 88.5L63.77 69.66A24 24 0 0 1 36.23 69.66Z" fill="none" stroke="var(--accent2)" stroke-width=".8" stroke-dasharray="2 2"/></svg>
+      <div class="safept" id="safept"><div class="ring"></div><div class="sl" data-t="safeTag"></div></div>
+      <div class="trap" id="trap"></div>
+      <div class="dronebox" id="dronebox">
+        <div class="dshield" id="dshield"><svg viewBox="0 0 120 120" fill="none"><circle cx="60" cy="60" r="56" stroke="currentColor" stroke-width="3" stroke-dasharray="5 7"/><g stroke="currentColor" stroke-width="5" stroke-linecap="round"><path d="M12 30V14h16M108 30V14H92M12 90v16h16M108 90v16H92"/></g></svg></div>
+        <svg class="quad" viewBox="0 0 240 240" fill="none">
+          <g stroke="currentColor" stroke-width="8" stroke-linecap="round" opacity=".9"><line x1="120" y1="120" x2="58" y2="58"/><line x1="120" y1="120" x2="182" y2="58"/><line x1="120" y1="120" x2="58" y2="182"/><line x1="120" y1="120" x2="182" y2="182"/></g>
+          <rect x="92" y="92" width="56" height="56" rx="16" fill="#0C3A31" stroke="currentColor" stroke-width="5"/><circle cx="120" cy="152" r="8" fill="var(--accent2)"/>
+          <g transform="translate(58,58)"><ellipse rx="30" ry="30" fill="currentColor" opacity=".07"/><rect class="rotor" x="-30" y="-3.5" width="60" height="7" rx="3.5" fill="currentColor"/></g>
+          <g transform="translate(182,58)"><ellipse rx="30" ry="30" fill="currentColor" opacity=".07"/><rect class="rotor" x="-30" y="-3.5" width="60" height="7" rx="3.5" fill="currentColor"/></g>
+          <g transform="translate(58,182)"><ellipse rx="30" ry="30" fill="currentColor" opacity=".07"/><rect class="rotor" x="-30" y="-3.5" width="60" height="7" rx="3.5" fill="currentColor"/></g>
+          <g transform="translate(182,182)"><ellipse rx="30" ry="30" fill="currentColor" opacity=".07"/><rect class="rotor" x="-30" y="-3.5" width="60" height="7" rx="3.5" fill="currentColor"/></g>
+        </svg>
+      </div>
+      <div class="vmark" id="vmark"><div class="vi" id="vmarkIcon"></div><span class="tl" data-t="ambushTag"></span></div>
+    </div>
+    <div class="prompt" id="prompt"></div>
+    <div class="actp" id="actp"><div class="ai" id="actIc"></div><div class="txt"><div class="at"><span id="actT"></span><span class="tag hidden" id="actTag"></span></div><div class="ax" id="actX"></div></div></div>
+    <div class="acts"><button class="btn sm hidden" id="nextBtn" data-t="nextBtn"></button></div>
+  </div></section>
+
+  <!-- WIN -->
+  <section class="scene" id="s-win"><div class="wrap">
+    <div class="kick" data-t="winKick"></div>
+    <h1 class="big" data-t="winTitle"></h1>
+    <div class="vs">
+      <div class="fig"><svg id="heroSmall" viewBox="0 0 160 160"></svg></div>
+      <span class="mid" data-t="winVs"></span>
+      <div class="fig defeated"><svg id="villainSmall" viewBox="0 0 160 160"></svg></div>
+    </div>
+    <p class="lead" data-t="winCaption" style="margin-top:8px"></p>
+    <div class="stats">
+      <div class="stat"><div class="v" id="wCnt">٦ / ٦</div><div class="l" data-t="stat1"></div></div>
+      <div class="stat"><div class="v" data-t="stat2v"></div><div class="l" data-t="stat2"></div></div>
+      <div class="stat"><div class="v" data-t="stat3v"></div><div class="l" data-t="stat3"></div></div>
+    </div>
+    <div class="explain" data-t="winExplain"></div>
+    <button class="btn lg" id="winBtn" data-t="winBtn"></button>
+  </div></section>
+
+  <!-- FINALE -->
+  <section class="scene" id="s-end"><div class="particles" id="particles"></div><div class="wrap" style="position:relative;z-index:1">
+    <div class="flag" style="font-size:64px;margin-bottom:8px"><span class="cloth">🇸🇦</span></div>
+    <p class="poem" id="poem"></p>
+    <div class="big" style="margin-top:16px;font-size:clamp(1.3rem,3.4vw,1.9rem)" data-t="endLine"></div>
+    <div class="team"><div class="tt" data-t="teamL"></div><div class="members" id="members"></div></div>
+    <button class="ghost" id="replayBtn" data-t="replayBtn" style="margin-top:20px"></button>
+  </div></section>
+</div>
+
+<script>
+(function(){"use strict";
+try{document.documentElement.setAttribute("dir","rtl")}catch(e){}
+
+/* ================= ALL TEXT (edit here) ================= */
+var T={
+  startKick:"تجربة تفاعلية · هاكاثون سيف",
+  startTitle:"مهمة: احمِ السماء",
+  startLead:"العدو يحاول السيطرة على طائرة بدون طيار. مهمتك حمايتها باستخدام تقنية سكاي كور.",
+  startBtn:"ابدأ", skipBtn:"انتقل إلى النهاية",
+  charKick:"شخصيتك",
+  rankL:"الرتبة:", rankV:"ضابط",
+  unitL:"الوحدة:", unitV:"صقور السماء",
+  missionL:"المهمة:", missionV:"حماية طائرة بدون طيار من هجوم سيبراني.",
+  namePh:"اكتب اسمك (اختياري)", defaultName:"الضابط", charBtn:"اقبل المهمة",
+  briefKick:"تنبيه", briefTitle:"عدوٌّ يهاجم الطائرة",
+  briefLead:"يحاول السيطرة عليها عن بُعد بهجمات سيبرانية.",
+  roleL:"دورك:", roleV:"اضغط على كل خطر يقترب من الطائرة، وسكاي كور يوقفه.",
+  briefBtn:"ابدأ المهمة",
+  barLbl:"سلامة النطاق", zoneTag:"النطاق المحمي", safeTag:"نقطة آمنة", ambushTag:"كمين",
+  readyT:"النطاق المحمي", readyX:"المسار المسموح للطائرة. سكاي كور يمنعها من الخروج منه.",
+  tapPrompt:"اضغط على الخطر لتوقفه", donePrompt:"أُوقف ✓", autoTag:"تلقائي",
+  autoTitle:"سكاي كور أوقفه تلقائياً", nextBtn:"التالي",
+  ambushPrompt:"اضغط على العدو لتفعّل الوضع الآمن",
+  winKick:"نجحت المهمة", winTitle:"الطائرة بأمان", winVs:"ردّا الهجوم",
+  winCaption:"الضابط وسكاي كور أفشلا خطة العدو.",
+  stat1:"هجمات صُدّت", stat2v:"سليم", stat2:"النطاق المحمي", stat3v:"نجت", stat3:"الطائرة",
+  winExplain:"سكاي كور يفحص كل أمر قبل تنفيذه: من أرسله؟ هل الموقع حقيقي؟ هل هو داخل النطاق؟ ويضيّق النطاق من جهة العدو، ويعمل تلقائياً حتى لو انقطع الاتصال. جرّبناه على محاكي ArduPilot فصدّ ٩ هجمات من ٩.",
+  winBtn:"النهاية",
+  poem:["سماءٌ لا يُطال غمامُها","وأرضٌ لا يُمسّ ثراها","اللهم احفظ وطناً 💚"],
+  endLine:"سكاي كور، درعٌ في سماء المملكة",
+  teamL:"فريق سكاي كور", replayBtn:"أعد التجربة"
+};
+var STAGES=[
+  {ic:"gps",ang:-55,label:"تزييف الموقع",
+   eT:"العدو يزيّف الموقع", eX:"يرسل إشارة GPS مزيّفة لتنحرف الطائرة عن مسارها.",
+   sT:"سكاي كور حظر الموقع المزيّف", sX:"حسّاسات الحركة تؤكد أن الطائرة لم تتحرك."},
+  {ic:"cmd",ang:30,label:"أمر مزيّف",
+   eT:"العدو يرسل أمراً مزيّفاً", eX:"أمر بلا توقيع يوجّه الطائرة إلى مكان يختاره.",
+   sT:"سكاي كور حظر الأمر", sX:"الأمر لا يحمل توقيع المشغّل الحقيقي."},
+  {ic:"replay",ang:210,label:"أمر مكرّر",
+   eT:"العدو يعيد أمراً قديماً", eX:"التقط أمراً حقيقياً سابقاً وأعاد إرساله.",
+   sT:"سكاي كور حظر الأمر", sX:"رقم الأمر قديم ومكرّر."},
+  {ic:"bound",ang:115,label:"خارج النطاق",
+   eT:"العدو يسحب الطائرة خارج النطاق", eX:"يأمرها بالتوجّه إلى منطقة خطرة خارج مسارها.",
+   sT:"سكاي كور حظر الأمر", sX:"الوجهة خارج النطاق المحمي، فبقيت الطائرة داخله."},
+  {ic:"pull",ang:75,label:"سحب نحو العدو",fence:true,
+   eT:"العدو يكرر الهجوم من الجنوب", eX:"يرسل أمراً يقرّب الطائرة نحوه، والوجهة داخل النطاق.",
+   sT:"سكاي كور ضيّق السياج الديناميكي", sX:"لاحظ أن الهجمات من الجنوب، فحظر تلك الجهة وصار أي أمر نحوها مرفوضاً."},
+  {ambush:true,
+   eT:"العدو ينصب كميناً", eX:"يقطع الاتصال لتعود الطائرة، وينتظرها في طريق العودة.",
+   sT:"سكاي كور فعّل الوضع الآمن", sX:"نقل الطائرة شمالاً إلى نقطة آمنة بعيداً عن العدو، وأقفل إعداداتها."}
+];
+var TEAM=[{n:"ريف العتيبي",u:"https://www.linkedin.com/in/reef-alotaibi-568780175"},
+          {n:"جوري الحمود",u:"https://www.linkedin.com/in/jory-alhamoud-544499235"},
+          {n:"سارة المقبل",u:"https://www.linkedin.com/in/sarahalmuqbil"}];
+/* ======================================================== */
+
+document.querySelectorAll("[data-t]").forEach(function(el){var k=el.getAttribute("data-t");if(T[k]!=null)el.textContent=T[k]});
+document.getElementById("nameIn").placeholder=T.namePh;
+var poem=document.getElementById("poem");
+T.poem.forEach(function(line,i){var s=document.createElement("span");if(i===T.poem.length-1)s.className="g";s.textContent=line;poem.appendChild(s);if(i<T.poem.length-1)poem.appendChild(document.createElement("br"))});
+
+var AR="٠١٢٣٤٥٦٧٨٩";function toAr(n){return String(n).replace(/\d/g,function(d){return AR[+d]})}
+function show(id){document.querySelectorAll(".scene").forEach(function(s){s.classList.toggle("on",s.id===id)})}
+function $(id){return document.getElementById(id)}
+
+/* characters */
+var VILLAIN='<circle cx="80" cy="80" r="76" fill="#0a0d0c" stroke="#3a1416" stroke-width="2"/>'+
+  '<path d="M30 152v-14c0-22 22-34 50-34s50 12 50 34v14Z" fill="#14100f"/>'+
+  '<path d="M44 86c0-24 16-40 36-40s36 16 36 40c0 6-2 10-6 12-6-10-17-16-30-16s-24 6-30 16c-4-2-6-6-6-12Z" fill="#0d0b0a"/>'+
+  '<ellipse cx="80" cy="84" rx="26" ry="30" fill="#060605"/>'+
+  '<circle cx="70" cy="82" r="8" fill="#ff3b3f" opacity=".2"/><circle cx="90" cy="82" r="8" fill="#ff3b3f" opacity=".2"/>'+
+  '<circle cx="70" cy="82" r="4" fill="#ff3b3f"/><circle cx="90" cy="82" r="4" fill="#ff3b3f"/>';
+var HERO='<circle cx="80" cy="80" r="76" fill="#0A2E27" stroke="#1A4A41" stroke-width="2"/>'+
+  '<path d="M26 150v-10c0-21 22-32 54-32s54 11 54 32v10Z" fill="#B9A672"/>'+
+  '<path d="M62 120l18 10 18-10-6 22H68Z" fill="#06241f"/>'+
+  '<rect x="34" y="112" width="26" height="8" rx="3" fill="#8f7f50"/><rect x="100" y="112" width="26" height="8" rx="3" fill="#8f7f50"/>'+
+  '<circle cx="41" cy="116" r="2" fill="#E0B85C"/><circle cx="47" cy="116" r="2" fill="#E0B85C"/><circle cx="53" cy="116" r="2" fill="#E0B85C"/>'+
+  '<rect x="104" y="122" width="18" height="11" rx="2" fill="#9c8c5c"/><rect x="106" y="124" width="14" height="7" rx="1" fill="#006C35"/>'+
+  '<rect x="71" y="96" width="18" height="18" rx="6" fill="#caa98a"/>'+
+  '<ellipse cx="80" cy="74" rx="24" ry="26" fill="#d6b595"/>'+
+  '<path d="M52 60c0-16 13-26 28-26s28 9 28 22c0 4-2 6-5 6H56c-3 0-4-1-4-2Z" fill="#6E1F2A"/>'+
+  '<path d="M104 54c3 0 5 2 5 5s-3 5-8 5" fill="#58121c"/>'+
+  '<circle cx="66" cy="48" r="5" fill="#0A2E27" stroke="#E0B85C" stroke-width="1.5"/>'+
+  '<circle cx="72" cy="74" r="2.4" fill="#3a2c22"/><circle cx="88" cy="74" r="2.4" fill="#3a2c22"/>'+
+  '<path d="M74 84c2 2 10 2 12 0" stroke="#8a6a52" stroke-width="2" stroke-linecap="round" fill="none"/>';
+["heroBig","heroSmall"].forEach(function(id){$(id).innerHTML=HERO});
+["villainBig","villainSmall"].forEach(function(id){$(id).innerHTML=VILLAIN});
+var VILLAIN_ICON='<svg viewBox="0 0 160 160">'+VILLAIN+'</svg>';
+var SKY_ICON='<svg viewBox="0 0 32 32" fill="none"><path d="M16 2 4 7v8c0 7 5 12 12 15 7-3 12-8 12-15V7L16 2Z" stroke="currentColor" stroke-width="2"/><path d="M16 9v8m0 0 4-2m-4 2-4-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+$("vmarkIcon").innerHTML=VILLAIN_ICON;
+
+/* team */
+var LI='<svg class="li" viewBox="0 0 24 24" fill="currentColor"><path d="M6.94 5a2 2 0 1 1-4 0 2 2 0 0 1 4 0ZM3 8.5h3.9V21H3V8.5Zm6.3 0H13v1.7h.05c.5-.9 1.7-1.9 3.5-1.9 3.8 0 4.5 2.4 4.5 5.6V21h-3.9v-5.3c0-1.3 0-2.9-1.8-2.9s-2.1 1.4-2.1 2.8V21H9.3V8.5Z"/></svg>';
+TEAM.forEach(function(m){var el;if(m.u){el=document.createElement("a");el.href=m.u;el.target="_blank";el.rel="noopener";el.innerHTML=LI}else{el=document.createElement("span")}
+  var nm=document.createElement("span");nm.textContent=m.n;el.appendChild(nm);el.className="mem";$("members").appendChild(el)});
+
+/* ---------- audio (synth, original) ---------- */
+var ctx=null,master=null,muted=false,anthemT=null;
+function initAudio(){if(ctx)return;try{ctx=new (window.AudioContext||window.webkitAudioContext)();master=ctx.createGain();master.gain.value=muted?0:.5;master.connect(ctx.destination)}catch(e){}}
+function env(type,f,t0,dur,vol,glide){if(!ctx||muted)return;try{var o=ctx.createOscillator(),g=ctx.createGain();o.type=type;o.frequency.setValueAtTime(f,t0);if(glide)o.frequency.exponentialRampToValueAtTime(glide,t0+dur);g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(vol,t0+.012);g.gain.exponentialRampToValueAtTime(.0008,t0+dur);o.connect(g);g.connect(master);o.start(t0);o.stop(t0+dur+.03)}catch(e){}}
+function noise(t0,dur,vol){if(!ctx||muted)return;try{var b=ctx.createBuffer(1,Math.floor(ctx.sampleRate*dur),ctx.sampleRate),d=b.getChannelData(0);for(var i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2);var s=ctx.createBufferSource();s.buffer=b;var g=ctx.createGain();g.gain.value=vol;var f=ctx.createBiquadFilter();f.type="bandpass";f.frequency.value=1100;s.connect(f);f.connect(g);g.connect(master);s.start(t0)}catch(e){}}
+function sfx(n){if(!ctx||muted)return;var t=ctx.currentTime;
+  if(n==="block"){env("sine",440,t,.12,.4);env("square",880,t+.02,.14,.16,1320);env("triangle",1320,t+.08,.18,.2)}
+  else if(n==="alarm"){env("sawtooth",330,t,.3,.22,220);env("sawtooth",330,t+.36,.3,.22,220)}
+  else if(n==="warn"){noise(t,.18,.22);env("sawtooth",150,t,.2,.18,90)}
+  else if(n==="power"){env("sine",220,t,.6,.3,660);env("triangle",440,t+.1,.6,.2,880)}
+  else if(n==="enemy"){env("sawtooth",120,t,.3,.15,80);noise(t,.12,.1)}
+  else if(n==="click"){env("triangle",600,t,.08,.15)}
+  else if(n==="win"){[523,659,784,1046].forEach(function(f,i){env("triangle",f,t+i*.13,.5,.26)})}}
+function anthem(){if(!ctx||muted)return;var t=ctx.currentTime+.1,ch=[[262,330,392],[392,494,587],[220,262,330],[349,440,523]],mel=[523,587,659,784];
+  ch.forEach(function(c,i){var tt=t+i*2;c.forEach(function(f){env("sine",f,tt,1.9,.11)});env("triangle",mel[i],tt+.05,1.4,.17);env("sine",mel[i]*2,tt+.05,1,.05)});
+  env("sine",523,t+8.2,2.6,.13);env("triangle",659,t+8.2,2.2,.11);env("sine",784,t+8.3,2.2,.09)}
+
+/* controls */
+$("muteBtn").addEventListener("click",function(){muted=!muted;if(master)master.gain.value=muted?0:.5;
+  $("muteIcon").innerHTML=muted?'<path d="M4 9v6h4l5 4V5L8 9H4Z"/><path d="M22 9l-6 6M16 9l6 6"/>':'<path d="M4 9v6h4l5 4V5L8 9H4Z"/><path d="M16 9a4 4 0 0 1 0 6"/>'});
+$("calmBtn").addEventListener("click",function(){document.body.classList.toggle("calm")});
+
+/* flow */
+var playerName=T.defaultName;
+$("startBtn").addEventListener("click",function(){initAudio();if(ctx&&ctx.state==="suspended")ctx.resume();sfx("click");show("s-char")});
+$("skipBtn").addEventListener("click",function(){initAudio();if(ctx)ctx.resume();show("s-end");runFinale()});
+$("charBtn").addEventListener("click",function(){var v=$("nameIn").value.trim();playerName=v||T.defaultName;$("hudName").textContent=playerName;sfx("enemy");show("s-brief")});
+$("briefBtn").addEventListener("click",function(){sfx("alarm");show("s-game");startGame()});
+$("winBtn").addEventListener("click",function(){show("s-end");runFinale()});
+$("replayBtn").addEventListener("click",function(){resetGame();show("s-start")});
+
+/* ---------- game ---------- */
+var ICONS={gps:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a7 7 0 0 1 7 7c0 5-7 13-7 13S5 14 5 9a7 7 0 0 1 7-7Z"/><circle cx="12" cy="9" r="2.3"/></svg>',
+  cmd:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h10M4 17h7"/><path d="M17 14l4 3-4 3"/></svg>',
+  replay:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v4h4"/></svg>',
+  bound:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16v16H4z" stroke-dasharray="3 3"/><path d="M8 16l8-8"/></svg>',
+  pull:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v13m0 0-5-5m5 5 5-5"/><path d="M5 20h14"/></svg>'};
+var arena=$("arena"),dronebox=$("dronebox"),dshield=$("dshield"),prompt=$("prompt"),bar=$("shieldBar"),cnt=$("hudCnt"),
+    actp=$("actp"),actIc=$("actIc"),actT=$("actT"),actX=$("actX"),actTag=$("actTag"),nextBtn=$("nextBtn"),
+    safept=$("safept"),trap=$("trap"),vmark=$("vmark"),zlabel=$("zlabel"),fenceFull=$("fenceFull"),fenceCut=$("fenceCut"),fenceClosed=$("fenceClosed");
+var stage=0,count=0,timer=null,live=null,onNext=null;
+function setBar(v){bar.style.width=v+"%";bar.style.background=v<70?"linear-gradient(90deg,#E0A33A,#E5565B)":"linear-gradient(90deg,var(--accent),var(--accent2))"}
+function panel(kind,title,text,tag){actp.className="actp "+kind;actIc.innerHTML=kind==="enemy"?VILLAIN_ICON:SKY_ICON;actT.textContent=title;actX.textContent=text;
+  if(tag){actTag.textContent=tag;actTag.classList.remove("hidden")}else actTag.classList.add("hidden")}
+function setCount(n){count=n;cnt.textContent=toAr(n)+" / "+toAr(STAGES.length)}
+function showNext(fn){onNext=fn;nextBtn.classList.remove("hidden")}
+nextBtn.addEventListener("click",function(){nextBtn.classList.add("hidden");sfx("click");var f=onNext;onNext=null;if(f)f()});
+function pulseShield(){dshield.classList.remove("on");void dshield.offsetWidth;dshield.classList.add("on")}
+function closeFence(){fenceFull.style.opacity="0";fenceCut.style.opacity="1";fenceClosed.style.opacity="1";sfx("power")}
+function openFence(){fenceFull.style.opacity="1";fenceCut.style.opacity="0";fenceClosed.style.opacity="0"}
+
+function startGame(){resetArena();stage=0;setCount(0);setBar(100);prompt.textContent="";
+  panel("sky",T.readyT,T.readyX);zoneHint(true);showNext(function(){zoneHint(false);runStage(0)})}
+function zoneHint(on){fenceFull.classList.toggle("hl",on);zlabel.classList.toggle("hl",on)}
+function runStage(i){stage=i;var s=STAGES[i];if(s.ambush)return ambush(s);
+  panel("enemy",s.eT,s.eX);sfx("enemy");setBar(78);prompt.textContent=T.tapPrompt;
+  var W=arena.clientWidth,a=s.ang*Math.PI/180,R=W*0.46,r=W*0.24,sx=Math.cos(a)*R,sy=Math.sin(a)*R;
+  var t=document.createElement("div");t.className="threat";
+  t.innerHTML='<div class="ic">'+ICONS[s.ic]+'<span class="tapring"></span></div><span class="tl">'+s.label+'</span>';
+  t.style.transform="translate(50%,-50%) translate("+sx+"px,"+sy+"px)";arena.appendChild(t);live=t;void t.offsetWidth;
+  t.style.transform="translate(50%,-50%) translate("+(Math.cos(a)*r)+"px,"+(Math.sin(a)*r)+"px)";
+  var done=false;
+  function resolve(byPlayer){if(done)return;done=true;clearTimeout(timer);
+    t.classList.add("done");t.style.transition="opacity .35s,transform .35s";t.style.opacity="0";t.style.transform+=" scale(.3)";setTimeout(function(){t.remove()},380);
+    pulseShield();setBar(100);setCount(count+1);
+    if(byPlayer){sfx("block");prompt.textContent=T.donePrompt;panel("sky",s.sT,s.sX)}
+    else{sfx("warn");prompt.textContent="";panel("sky",T.autoTitle,s.sX,T.autoTag)}
+    if(s.fence)closeFence();
+    showNext(function(){runStage(i+1)})}
+  t.addEventListener("click",function(){resolve(true)});
+  timer=setTimeout(function(){resolve(false)},10000)}
+function ambush(s){
+  panel("enemy",s.eT,s.eX);sfx("enemy");setBar(70);prompt.textContent=T.ambushPrompt;
+  zlabel.style.opacity="0";trap.classList.add("on");vmark.classList.remove("down");vmark.classList.add("on");
+  var done=false;
+  function resolve(byPlayer){if(done)return;done=true;clearTimeout(timer);
+    sfx("power");vmark.classList.add("down");trap.classList.remove("on");safept.classList.add("on");
+    dronebox.style.top="22%";pulseShield();setBar(100);setCount(STAGES.length);
+    prompt.textContent=byPlayer?T.donePrompt:"";
+    panel("sky",byPlayer?s.sT:T.autoTitle,s.sX,byPlayer?null:T.autoTag);
+    setTimeout(function(){showNext(function(){sfx("win");show("s-win")})},1600)}
+  vmark.onclick=function(){resolve(true)};
+  timer=setTimeout(function(){resolve(false)},12000)}
+function resetArena(){clearTimeout(timer);if(live){try{live.remove()}catch(e){}}live=null;openFence();
+  safept.classList.remove("on");trap.classList.remove("on");vmark.classList.remove("on","down");vmark.onclick=null;
+  zlabel.style.opacity="1";dronebox.style.top="50%";nextBtn.classList.add("hidden");onNext=null;zoneHint(false)}
+function resetGame(){resetArena();if(anthemT)clearTimeout(anthemT)}
+
+/* finale */
+var particles=$("particles");
+function runFinale(){if(!particles.childElementCount){for(var i=0;i<20;i++){var p=document.createElement("div");p.className="pt";p.style.left=(Math.random()*100)+"%";p.style.animationDelay=(Math.random()*8)+"s";p.style.animationDuration=(6+Math.random()*4)+"s";if(i%3===0)p.style.background="var(--gold)";particles.appendChild(p)}}
+  sfx("win");anthemT=setTimeout(anthem,700)}
+})();
+</script>
+
+</body>
+</html>
